@@ -1,5 +1,6 @@
 #!/bin/env python3
 from utils import from_bits, to_bits, xorv
+from functools import reduce
 
 
 def pad_data(data: list[int], r: int) -> list[int]:
@@ -8,23 +9,29 @@ def pad_data(data: list[int], r: int) -> list[int]:
     pad[0], pad[-1] = 1, 1
     return data + pad
 
-rc = [[1] * 256] * 24
+rc = [[1] * 64] * 24
 
 from itertools import product
 
 w = 3
 
-
+def parity(v):
+    return reduce(int.__xor__, v)
 
 def block_perm(block: list[int], l: int) -> list[int]:
     def aget(i, j, k):
         return a[i % 5][j % 5][k % w]
     a = [[[block[(5*i+j)*w+k] for k in range(w)] for j in range(5)] for i in range(5)]
     N = 5 * 5 * w
-    # a1 = [[0] for k in range(w) for
     for r in range(12 + 2*l):
+        a1 = [[[[0] for _ in range(w)] for _ in range(5)] for _ in range(5)]
         for i, (j, k) in product(range(5), product(range(5), range(w))):
-            a1[i][j][k] = a[i][j][k] ^ xorv([aget(m, j-1, k) for m in range(5)]) ^ xorv([aget(m, j+1, k-1) for m in range(5)])
+            a1[i][j][k] = a[i][j][k] ^ parity([aget(m, j-1, k) for m in range(5)]) ^ parity([aget(m, j+1, k-1) for m in range(5)])
+
+
+        a = a1
+        print(a)
+        exit(0)
 
 
 def sha3_256_enc(data: bytes) -> bytes:
