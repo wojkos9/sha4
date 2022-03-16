@@ -1,15 +1,16 @@
+#!/bin/env python3
 from utils import to_bits, xorv
 
 
 def pad_data(data: list[int], r: int) -> list[int]:
     pad = (r - len(data) % r) * '0'
-    pad = [int(p) for p in pad.split()]
+    pad = [int(p) for p in pad]
     pad[0], pad[-1] = 1, 1
     return data + pad
 
 
 def block_perm(block: list[int]) -> list[int]:
-    pass
+    return block
 
 def sha3_256_enc(data: bytes) -> list[int]:
     r = 1088
