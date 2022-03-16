@@ -1,5 +1,5 @@
 #!/bin/env python3
-from utils import to_bits, xorv
+from utils import from_bits, to_bits, xorv
 
 
 def pad_data(data: list[int], r: int) -> list[int]:
@@ -8,11 +8,26 @@ def pad_data(data: list[int], r: int) -> list[int]:
     pad[0], pad[-1] = 1, 1
     return data + pad
 
+rc = [[1] * 256] * 24
 
-def block_perm(block: list[int]) -> list[int]:
-    return block
+from itertools import product
 
-def sha3_256_enc(data: bytes) -> list[int]:
+w = 3
+
+
+
+def block_perm(block: list[int], l: int) -> list[int]:
+    def aget(i, j, k):
+        return a[i % 5][j % 5][k % w]
+    a = [[[block[(5*i+j)*w+k] for k in range(w)] for j in range(5)] for i in range(5)]
+    N = 5 * 5 * w
+    # a1 = [[0] for k in range(w) for
+    for r in range(12 + 2*l):
+        for i, (j, k) in product(range(5), product(range(5), range(w))):
+            a1[i][j][k] = a[i][j][k] ^ xorv([aget(m, j-1, k) for m in range(5)]) ^ xorv([aget(m, j+1, k-1) for m in range(5)])
+
+
+def sha3_256_enc(data: bytes) -> bytes:
     r = 1088
     c = 512
     l = 6
@@ -26,16 +41,17 @@ def sha3_256_enc(data: bytes) -> list[int]:
         block = padded[i:i+r]
         tmp = block + [0] * c
         tmp = xorv(tmp, state)
-        state = block_perm(tmp)
+        state = block_perm(tmp, l)
     res = state[:d]
-    return res
+    return bytes(from_bits(res))
 
 
 if __name__ == "__main__":
     msg = "abcd"
     data = msg.encode('ascii')
-    print(data)
-    sha3_256_enc(data)
+    print(data.hex())
+    res = sha3_256_enc(data)
+    print(res.hex())
 
 # data:
 # 1, 1, 0
