@@ -1,8 +1,7 @@
 #!/bin/env python3
-from utils import andv, from_bits, to_bits, xorv
-from functools import reduce
-from itertools import product
 from const import *
+from security_analysis import *
+from hashlib import sha3_256
 
 
 def pad_data(data: list[int], r: int) -> list[int]:
@@ -21,11 +20,14 @@ rot = [[0,  36,   3,  41,  18],
     [28, 55,  25,  21,  56],
     [27, 20,  39,   8,  14]]
 
+
 def parity(v):
     return reduce(int.__xor__, v)
 
+
 def aget(a, i, j, k):
     return a[i % 5][j % 5][k % w]
+
 
 def theta(a):
     a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
@@ -33,11 +35,14 @@ def theta(a):
         a1[i][j][k] = a[i][j][k] ^ parity([aget(a, m, j-1, k) for m in range(5)]) ^ parity([aget(a, m, j+1, k-1) for m in range(5)])
     return a1
 
+
 def rotv(vec, a):
     return vec[-a:] + vec[:-a]
 
+
 def notv(vec):
     return [~e for e in vec]
+
 
 def rho_pi(a):
     a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
@@ -45,6 +50,7 @@ def rho_pi(a):
         for y in range(5):
             a1[y][(2 * x + 3 * y) % 5] = rotv(a[x][y], rot[x][y])
     return a1
+
 
 def block_perm(block: list[int], l: int) -> list[int]:
 
@@ -59,6 +65,7 @@ def block_perm(block: list[int], l: int) -> list[int]:
         # exit(0)
         a = iota_step(a, c)
     return [a[i][j][k] for i, (j, k) in product(range(5), product(range(5), range(w)))]
+
 
 def chi_step(a):
     a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
@@ -93,14 +100,19 @@ def sha3_256_enc(data: bytes) -> bytes:
 
 
 if __name__ == "__main__":
-    from hashlib import sha3_256
-    msg = "aaa"
-    data = msg.encode('ascii')
-    print(data.hex())
-    res = sha3_256_enc(data)
-    print(res.hex())
-    e = sha3_256(data)
-    print(e.hexdigest())
+    msgs = ["aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
+    data = [msg.encode('ascii') for msg in msgs]
+    print([d.hex() for d in data])
+    res = [sha3_256_enc(d) for d in data]
+    print([r.hex() for r in res])
+    e = [sha3_256(d).digest() for d in data]
+    print(e)
+    print([ee.hex() for ee in e])
+
+    print()
+    check_nonlinearity(e)
+    print()
+    check_nonlinearity(res)
 
 # data:
 # 1, 1, 0
