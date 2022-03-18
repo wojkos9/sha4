@@ -104,11 +104,14 @@ if __name__ == "__main__":
     data = [msg.encode('ascii') for msg in msgs]
     print([d.hex() for d in data])
     res = [sha3_256_enc(d) for d in data]
+
+
     print([r.hex() for r in res])
     e = [sha3_256(d).digest() for d in data]
     print(e)
     print([ee.hex() for ee in e])
 
+    find_collision(e, 7, hash_f=lambda d: sha3_256(d).digest())
     print()
     check_nonlinearity(e)
     print()

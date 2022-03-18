@@ -2,6 +2,7 @@ from itertools import product, combinations
 from utils import *
 from keccak import sha3_256_enc
 from utils import to_bits
+import random
 
 
 def check_nonlinearity(hashes):
@@ -36,6 +37,28 @@ def check_nonlinearity(hashes):
         print(f"{hashes[i]}: {min(sums)}")
 
 
+def find_collision(hashes, bits, hash_f=sha3_256_enc):
+    # random.seed(123)
+    for hash in hashes[:1]:
+        hash_bits = to_bits(hash)
+        col = ""
+        ctr = 0
+        best = 0
+        while True:
+            data = random.randbytes(32)
+            guess = hash_f(data)
+            guess_bits = to_bits(guess)
+            n = next(i for i in range(len(guess_bits)) if guess_bits[i] != hash_bits[i])
+            best = max(best, n)
+            print(n, 'best:', best)
+            ctr += 1
+            if n >= bits:
+                break
+        print('checked hashes:', ctr)
+        print(hash_bits)
+        print(guess_bits)
+
+
 def fun(b: list[int]) -> list[int]:
     pass
 
@@ -46,18 +69,22 @@ def fun(b: list[int]) -> list[int]:
 def flip_bit(bits, i):
     return [b ^ 1 if j == i else b for j, b in enumerate(bits)]
 
+
 def hdist(f1, f2):
     return sum(x ^ y for (x, y) in zip(f1, f2))
+
 
 def hamming(d1, d2):
     b1 = to_bits(d1)
     b2 = to_bits(d2)
     return hdist(b1, b2) / len(b1)
 
+
 def sac_vals(bits):
     n = len(bits)
     m = len(bin(n)) - 2
     return [hamming(sha3_256_enc(bits), sha3_256_enc(flip_bit(bits, i))) for i in range(m)]
+
 
 def test_sac():
     data = ["qwertyui", "asdfghj"][:1]
@@ -65,6 +92,7 @@ def test_sac():
         b = to_bits(d.encode('ascii'))
         v = sac_vals(b)
         print([v * 100 for v in v])
+
 
 if __name__ == "__main__":
     test_sac()
