@@ -114,6 +114,8 @@ if __name__ == "__main__":
     print()
     check_nonlinearity(res)
 
+    test_sac()
+
 # data:
 # 1, 1, 0
 # padding:
