@@ -35,6 +35,16 @@ def block_perm(block: list[int], l: int) -> list[int]:
         exit(0)
 
 
+def chi_step(a):
+    for x in range(5):
+        for y in range(5):
+            a[x][y] = a[x][y] ^ ((~a[(x + 1) % 5][a]) & a[(x + 2) % 5][y])
+
+
+def iota_step(a, r_const):
+    return a ^ r_const
+
+
 def sha3_256_enc(data: bytes) -> bytes:
     r = 1088
     c = 512
