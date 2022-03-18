@@ -8,3 +8,6 @@ def from_bits(b, g=8):
 
 def xorv(a: list[int], b: list[int]):
     return [b1 ^ b2 for (b1, b2) in zip(a, b)]
+
+def andv(a: list[int], b: list[int]):
+    return [b1 & b2 for (b1, b2) in zip(a, b)]

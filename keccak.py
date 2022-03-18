@@ -1,5 +1,5 @@
 #!/bin/env python3
-from utils import from_bits, to_bits, xorv
+from utils import andv, from_bits, to_bits, xorv
 from functools import reduce
 from itertools import product
 from const import *
@@ -13,7 +13,7 @@ def pad_data(data: list[int], r: int) -> list[int]:
 
 
 rc = [[1] * 64] * 24
-w = 3
+w = 64
 
 rot = [[0,  36,   3,  41,  18],
     [1,  44,  10,  45,   2],
@@ -28,7 +28,7 @@ def aget(a, i, j, k):
     return a[i % 5][j % 5][k % w]
 
 def theta(a):
-    a1 = [[[[0] for _ in range(w)] for _ in range(5)] for _ in range(5)]
+    a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
     for i, (j, k) in product(range(5), product(range(5), range(w))):
         a1[i][j][k] = a[i][j][k] ^ parity([aget(a, m, j-1, k) for m in range(5)]) ^ parity([aget(a, m, j+1, k-1) for m in range(5)])
     return a1
@@ -36,8 +36,11 @@ def theta(a):
 def rotv(vec, a):
     return vec[-a:] + vec[:-a]
 
+def notv(vec):
+    return [~e for e in vec]
+
 def rho_pi(a):
-    a1 = [[[[0] for _ in range(w)] for _ in range(5)] for _ in range(5)]
+    a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
     for x in range(5):
         for y in range(5):
             a1[y][(2 * x + 3 * y) % 5] = rotv(a[x][y], rot[x][y])
@@ -50,18 +53,24 @@ def block_perm(block: list[int], l: int) -> list[int]:
     for r in range(12 + 2*l):
         a = theta(a)
         a = rho_pi(a)
-        print(a)
-        exit(0)
-
+        a = chi_step(a)
+        c = round_const[r]
+        # print(c)
+        # exit(0)
+        a = iota_step(a, c)
+    return [a[i][j][k] for i, (j, k) in product(range(5), product(range(5), range(w)))]
 
 def chi_step(a):
+    a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
     for x in range(5):
         for y in range(5):
-            a[x][y] = a[x][y] ^ ((~a[(x + 1) % 5][a]) & a[(x + 2) % 5][y])
+            a1[x][y] = xorv(a[x][y], andv((notv(a[(x + 1) % 5][y])), a[(x + 2) % 5][y]))
+    return a1
 
 
 def iota_step(a, r_const):
-    return a ^ r_const
+    a[0][0] = xorv(a[0][0], r_const)
+    return a
 
 
 def sha3_256_enc(data: bytes) -> bytes:
@@ -84,11 +93,14 @@ def sha3_256_enc(data: bytes) -> bytes:
 
 
 if __name__ == "__main__":
-    msg = "abcd"
+    from hashlib import sha3_256
+    msg = ""
     data = msg.encode('ascii')
     print(data.hex())
     res = sha3_256_enc(data)
     print(res.hex())
+    e = sha3_256(data)
+    print(e.hexdigest())
 
 # data:
 # 1, 1, 0
