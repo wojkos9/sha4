@@ -94,7 +94,7 @@ def sha3_256_enc(data: bytes) -> bytes:
 
 if __name__ == "__main__":
     from hashlib import sha3_256
-    msg = ""
+    msg = "aaa"
     data = msg.encode('ascii')
     print(data.hex())
     res = sha3_256_enc(data)
