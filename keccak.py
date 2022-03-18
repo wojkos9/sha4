@@ -15,22 +15,41 @@ def pad_data(data: list[int], r: int) -> list[int]:
 rc = [[1] * 64] * 24
 w = 3
 
+rot = [[0,  36,   3,  41,  18],
+    [1,  44,  10,  45,   2],
+    [62,  6,  43,  15,  61],
+    [28, 55,  25,  21,  56],
+    [27, 20,  39,   8,  14]]
 
 def parity(v):
     return reduce(int.__xor__, v)
 
+def aget(a, i, j, k):
+    return a[i % 5][j % 5][k % w]
+
+def theta(a):
+    a1 = [[[[0] for _ in range(w)] for _ in range(5)] for _ in range(5)]
+    for i, (j, k) in product(range(5), product(range(5), range(w))):
+        a1[i][j][k] = a[i][j][k] ^ parity([aget(a, m, j-1, k) for m in range(5)]) ^ parity([aget(a, m, j+1, k-1) for m in range(5)])
+    return a1
+
+def rotv(vec, a):
+    return vec[-a:] + vec[:-a]
+
+def rho_pi(a):
+    a1 = [[[[0] for _ in range(w)] for _ in range(5)] for _ in range(5)]
+    for x in range(5):
+        for y in range(5):
+            a1[y][(2 * x + 3 * y) % 5] = rotv(a[x][y], rot[x][y])
+    return a1
 
 def block_perm(block: list[int], l: int) -> list[int]:
-    def aget(i, j, k):
-        return a[i % 5][j % 5][k % w]
+
     a = [[[block[(5*i+j)*w+k] for k in range(w)] for j in range(5)] for i in range(5)]
     N = 5 * 5 * w
     for r in range(12 + 2*l):
-        a1 = [[[[0] for _ in range(w)] for _ in range(5)] for _ in range(5)]
-        for i, (j, k) in product(range(5), product(range(5), range(w))):
-            a1[i][j][k] = a[i][j][k] ^ parity([aget(m, j-1, k) for m in range(5)]) ^ parity([aget(m, j+1, k-1) for m in range(5)])
-
-        a = a1
+        a = theta(a)
+        a = rho_pi(a)
         print(a)
         exit(0)
 
