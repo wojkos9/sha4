@@ -32,7 +32,7 @@ def aget(a, i, j, k):
 def theta(a):
     a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
     for i, (j, k) in product(range(5), product(range(5), range(w))):
-        a1[i][j][k] = a[i][j][k] ^ parity([aget(a, m, j-1, k) for m in range(5)]) ^ parity([aget(a, m, j+1, k-1) for m in range(5)])
+        a1[i][j][k] = a[i][j][k] ^ parity([a[m][(j-1) % 5][k] for m in range(5)]) ^ parity([a[m][(j+1) % 5][(k-1) % w] for m in range(5)])
     return a1
 
 
@@ -48,12 +48,11 @@ def rho_pi(a):
     a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
     for x in range(5):
         for y in range(5):
-            a1[y][(2 * x + 3 * y) % 5] = rotv(a[x][y], rot[x][y])
+            a1[(3 * x + 2 * y) % 5][x] = rotv(a[x][y], rot[y][x])
     return a1
 
 
 def block_perm(block: list[int], l: int) -> list[int]:
-
     a = [[[block[(5*i+j)*w+k] for k in range(w)] for j in range(5)] for i in range(5)]
     N = 5 * 5 * w
     for r in range(12 + 2*l):
@@ -71,7 +70,7 @@ def chi_step(a):
     a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
     for x in range(5):
         for y in range(5):
-            a1[x][y] = xorv(a[x][y], andv((notv(a[(x + 1) % 5][y])), a[(x + 2) % 5][y]))
+            a1[x][y] = xorv(a[x][y], andv(notv(a[x][(y+1)%5]), a[x][(y+2)%5]))
     return a1
 
 
@@ -100,6 +99,12 @@ def sha3_256_enc(data: bytes) -> bytes:
 
 
 if __name__ == "__main__":
+    msg = "AAA"
+    data = msg.encode('ascii')
+    r = sha3_256_enc(data)
+    print(f"Keccak-256 for \"{msg}\": {r.hex()}")
+    exit(0)
+
     msgs = ["aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     data = [msg.encode('ascii') for msg in msgs]
     print([d.hex() for d in data])
