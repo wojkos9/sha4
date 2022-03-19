@@ -81,11 +81,12 @@ def hamming(d1, d2):
 
 
 def sac_vals(bits):
-    n = len(bits)
+    n = 3 #len(bits)
     m = len(bin(n)) - 2
-    return [hamming(sha3_256_enc(bits), sha3_256_enc(flip_bit(bits, i))) for i in range(m)]
+    base_hash = sha3_256_enc(bits)
+    return [hamming(base_hash, sha3_256_enc(flip_bit(bits, i))) for i in range(n)]
 
-
+# 49.603271484375
 def test_sac():
     data = ["qwertyui", "asdfghj"][:1]
     for d in data:
@@ -93,6 +94,17 @@ def test_sac():
         v = sac_vals(b)
         print([v * 100 for v in v])
 
+def test_balance1(bits: list[int]):
+    return bits.count(1) / len(bits)
 
-if __name__ == "__main__":
-    test_sac()
+def test_balance(n=5):
+    random.seed(1337)
+    data = [random.randbytes(32) for _ in range(n)]
+    c = 0
+    for d in data:
+        h = sha3_256_enc(d)
+        bal = test_balance1(to_bits(h))
+        print(bal, d, h)
+        c += bal
+    print(c / n)
+
