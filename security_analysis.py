@@ -2,13 +2,15 @@ from hashlib import sha3_256
 from itertools import product, combinations
 from utils import *
 from keccak import sha3_256_enc
-# from utils import to_bits
 import random
+import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def check_nonlinearity(hashes):
     all_f = [list(p) for p in product([0, 1], repeat=8)]
     tab_res = []
+    sums_res = []
 
     for f in all_f:
         rf = []
@@ -36,6 +38,18 @@ def check_nonlinearity(hashes):
             s = sum([ff ^ rr for ff, rr in zip(f, r)])
             sums.append(s)
         print(f"{hashes[i]}: {min(sums)}")
+        sums_res.append(min(sums))
+
+    return sums_res
+
+
+def get_nonlinearity_chart(data1, data2):
+    data = {'Input': data1,
+            'Hashes': data2}
+
+    df = pd.DataFrame(data)
+    df.plot(x='Input', y='Hashes', kind='scatter', ylim=(0, max(data2) + 10))
+    plt.show()
 
 
 def find_collision(hashes, bits, hash_f=sha3_256_enc):
@@ -60,13 +74,6 @@ def find_collision(hashes, bits, hash_f=sha3_256_enc):
         print(guess_bits)
 
 
-def fun(b: list[int]) -> list[int]:
-    pass
-
-
-# def flip_bit(f, i):
-#     return [f[j ^ 1<<i] for j in range(len(f))]
-
 def flip_bit(bits, i):
     return [b ^ 1 if j == i else b for j, b in enumerate(bits)]
 
@@ -82,10 +89,11 @@ def hamming(d1, d2):
 
 
 def sac_vals(bits):
-    n = 3 #len(bits)
+    n = 3  # len(bits)
     m = len(bin(n)) - 2
     base_hash = sha3_256_enc(bits)
     return [hamming(base_hash, sha3_256_enc(flip_bit(bits, i))) for i in range(n)]
+
 
 # 49.603271484375
 def test_sac():
@@ -95,8 +103,10 @@ def test_sac():
         v = sac_vals(b)
         print([v * 100 for v in v])
 
+
 def test_balance1(bits: list[int]):
     return bits.count(1) / len(bits)
+
 
 def test_balance(n=5):
     random.seed(1337)
@@ -109,8 +119,9 @@ def test_balance(n=5):
         c += bal
     print(c / n)
 
+
 def test_distribution(n=4, hash_f=sha3_256_enc):
-    counts = [0] * 2**n
+    counts = [0] * 2 ** n
     for _ in range(1000):
         r = random.randbytes(32)
         h = hash_f(r)
@@ -119,5 +130,33 @@ def test_distribution(n=4, hash_f=sha3_256_enc):
         counts[b] += 1
         print(counts)
 
+
+def convert(x):
+    if type(x) == str:
+        return x.encode('ascii')
+    elif type(x) == list:
+        return bytes(x)
+    return x
+
+
 if __name__ == "__main__":
-    test_distribution(hash_f=lambda d: sha3_256(d).digest())
+    # test_distribution(hash_f=lambda d: sha3_256(d).digest())
+    print(sha3_256_enc("AAA".encode('ascii')).hex())
+    msg = random.randbytes(32)
+
+    msgs = [[1] * 16, "aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "kawdbnawlkdnlaksndlskdknlsnd", "awidhnwasidnwoaidnwaoisd", "dwiuhdbuiwbduwdbwqigr387wui",
+            "ausdisuabdiusadbiud", "doiwhdiowhdiowhdiwodhwiod", "oiwqhdoiwdhwiohdfwoq3rhg83rh"]
+    data = [convert(msg) for msg in msgs]
+    print([d for d in data])
+    res = [sha3_256_enc(d) for d in data]
+
+    print([r.hex() for r in res])
+    e = [sha3_256(d).digest() for d in data]
+    print(e)
+    print([ee.hex() for ee in e])
+
+    # find_collision(e, 17, hash_f=lambda d: sha3_256_enc(d))
+    # print()
+    get_nonlinearity_chart(check_nonlinearity(data), check_nonlinearity(res))
