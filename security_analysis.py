@@ -1,7 +1,8 @@
+from hashlib import sha3_256
 from itertools import product, combinations
 from utils import *
 from keccak import sha3_256_enc
-from utils import to_bits
+# from utils import to_bits
 import random
 
 
@@ -108,3 +109,15 @@ def test_balance(n=5):
         c += bal
     print(c / n)
 
+def test_distribution(n=4, hash_f=sha3_256_enc):
+    counts = [0] * 2**n
+    for _ in range(1000):
+        r = random.randbytes(32)
+        h = hash_f(r)
+        b = from_bits1(to_bits(h)[:n])
+        print(b)
+        counts[b] += 1
+        print(counts)
+
+if __name__ == "__main__":
+    test_distribution(hash_f=lambda d: sha3_256(d).digest())

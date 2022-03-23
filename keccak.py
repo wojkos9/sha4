@@ -1,7 +1,9 @@
 #!/bin/env python3
+from itertools import product
 from const import *
-from security_analysis import *
+# from security_analysis import *
 from hashlib import sha3_256
+from utils import *
 
 
 def pad_data(data: list[int], r: int) -> list[int]:
@@ -97,29 +99,29 @@ def sha3_256_enc(data: bytes) -> bytes:
 
 import cProfile
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    print(sha3_256_enc("AAA".encode('ascii')).hex())
-    msg = random.randbytes(32)
+#     print(sha3_256_enc("AAA".encode('ascii')).hex())
+#     msg = random.randbytes(32)
 
-    msgs = ["aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
-    data = [msg.encode('ascii') for msg in msgs]
-    print([d.hex() for d in data])
-    res = [sha3_256_enc(d) for d in data]
+#     msgs = ["aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
+#     data = [msg.encode('ascii') for msg in msgs]
+#     print([d.hex() for d in data])
+#     res = [sha3_256_enc(d) for d in data]
 
 
-    print([r.hex() for r in res])
-    e = [sha3_256(d).digest() for d in data]
-    print(e)
-    print([ee.hex() for ee in e])
+#     print([r.hex() for r in res])
+#     e = [sha3_256(d).digest() for d in data]
+#     print(e)
+#     print([ee.hex() for ee in e])
 
-    find_collision(e, 17, hash_f=lambda d: sha3_256_enc(d))
-    print()
-    check_nonlinearity(e)
-    print()
-    check_nonlinearity(res)
+#     find_collision(e, 17, hash_f=lambda d: sha3_256_enc(d))
+#     print()
+#     check_nonlinearity(e)
+#     print()
+#     check_nonlinearity(res)
 
-    test_sac()
+#     test_sac()
 
 # data:
 # 1, 1, 0
