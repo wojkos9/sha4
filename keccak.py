@@ -102,13 +102,6 @@ if __name__ == "__main__":
     print(sha3_256_enc("AAA".encode('ascii')).hex())
     msg = random.randbytes(32)
 
-    cProfile.run('for _ in range(10): sha3_256_enc(msg)')
-
-    # for i in range(100):
-    #     sha3_256_enc(msg)
-    #     print(i)
-    exit()
-
     msgs = ["aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     data = [msg.encode('ascii') for msg in msgs]
     print([d.hex() for d in data])
