@@ -21,8 +21,8 @@ rot = [[0,  36,   3,  41,  18],
     [27, 20,  39,   8,  14]]
 
 
-def parity(v):
-    return reduce(int.__xor__, v)
+def parity(v: list[int]):
+    return v[0] ^ v[1] ^ v[2] ^ v[3] ^ v[4]
 
 
 def aget(a, i, j, k):
@@ -30,10 +30,7 @@ def aget(a, i, j, k):
 
 
 def theta(a):
-    a1 = [[[0 for _ in range(w)] for _ in range(5)] for _ in range(5)]
-    for i, (j, k) in product(range(5), product(range(5), range(w))):
-        a1[i][j][k] = a[i][j][k] ^ parity([aget(a, m, j-1, k) for m in range(5)]) ^ parity([aget(a, m, j+1, k-1) for m in range(5)])
-    return a1
+    return [[[a[i][j][k] ^ parity([a[m][(j-1)%5][k] for m in range(5)]) ^ parity([a[m][(j+1)%5][(k-1)%w] for m in range(5)]) for k in range(w)] for j in range(5)] for i in range(5)]
 
 
 def rotv(vec, a):
@@ -98,8 +95,20 @@ def sha3_256_enc(data: bytes) -> bytes:
     res = state[:d]
     return bytes(from_bits(res))
 
+import cProfile
 
 if __name__ == "__main__":
+
+    print(sha3_256_enc("AAA".encode('ascii')).hex())
+    msg = random.randbytes(32)
+
+    cProfile.run('for _ in range(10): sha3_256_enc(msg)')
+
+    # for i in range(100):
+    #     sha3_256_enc(msg)
+    #     print(i)
+    exit()
+
     msgs = ["aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     data = [msg.encode('ascii') for msg in msgs]
     print([d.hex() for d in data])
@@ -111,7 +120,7 @@ if __name__ == "__main__":
     print(e)
     print([ee.hex() for ee in e])
 
-    find_collision(e, 7, hash_f=lambda d: sha3_256(d).digest())
+    find_collision(e, 17, hash_f=lambda d: sha3_256_enc(d))
     print()
     check_nonlinearity(e)
     print()
