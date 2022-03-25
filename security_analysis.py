@@ -159,5 +159,4 @@ if __name__ == "__main__":
 
     # find_collision(e, 17, hash_f=lambda d: sha3_256_enc(d))
     # print()
-
     get_nonlinearity_chart(check_nonlinearity(data), check_nonlinearity(res))
