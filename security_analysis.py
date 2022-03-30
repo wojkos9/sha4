@@ -3,7 +3,7 @@ from itertools import product, combinations
 from utils import *
 from keccak import sha3_256_enc
 import random
-import pandas as pd
+# import pandas as pd
 import matplotlib.pyplot as plt
 
 
@@ -119,16 +119,26 @@ def test_balance(n=5):
         c += bal
     print(c / n)
 
+import json
 
-def test_distribution(n=4, hash_f=sha3_256_enc):
+def test_distribution(n=4, m=10, hash_f=sha3_256_enc):
     counts = [0] * 2 ** n
-    for _ in range(1000):
+    for _ in range(m):
         r = random.randbytes(32)
         h = hash_f(r)
         b = from_bits1(to_bits(h)[:n])
         print(b)
         counts[b] += 1
         print(counts)
+    x = list(range(2**n))
+    plt.xlabel("Value")
+    plt.ylabel("Occurrences")
+    plt.xticks(x)
+    plt.stem(x, counts, markerfmt=' ')
+    plt.ylim(top=100)
+    with open('res.txt', 'w') as f:
+        f.write(json.dumps(counts))
+    plt.show()
 
 
 def convert(x):
@@ -140,23 +150,25 @@ def convert(x):
 
 
 if __name__ == "__main__":
-    # test_distribution(hash_f=lambda d: sha3_256(d).digest())
-    print(sha3_256_enc("AAA".encode('ascii')).hex())
-    msg = random.randbytes(32)
+    # # test_distribution(hash_f=lambda d: sha3_256(d).digest())
+    # print(sha3_256_enc("AAA".encode('ascii')).hex())
+    # msg = random.randbytes(32)
 
-    msgs = [[1] * 16, "aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn",
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "kawdbnawlkdnlaksndlskdknlsnd", "awidhnwasidnwoaidnwaoisd", "dwiuhdbuiwbduwdbwqigr387wui",
-            "ausdisuabdiusadbiud", "doiwhdiowhdiowhdiwodhwiod", "oiwqhdoiwdhwiohdfwoq3rhg83rh"]
-    data = [convert(msg) for msg in msgs]
-    print([d for d in data])
-    res = [sha3_256_enc(d) for d in data]
+    # msgs = [[1] * 16, "aaa", "qwertyuiop", "asdfghjkjl", "zxcvbnm", "kieadbwakidbnoipwdnwlkidnkslwdnwoidnwdnwkdnkdn",
+    #         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    #         "kawdbnawlkdnlaksndlskdknlsnd", "awidhnwasidnwoaidnwaoisd", "dwiuhdbuiwbduwdbwqigr387wui",
+    #         "ausdisuabdiusadbiud", "doiwhdiowhdiowhdiwodhwiod", "oiwqhdoiwdhwiohdfwoq3rhg83rh"]
+    # data = [convert(msg) for msg in msgs]
+    # print([d for d in data])
+    # res = [sha3_256_enc(d) for d in data]
 
-    print([r.hex() for r in res])
-    e = [sha3_256(d).digest() for d in data]
-    print(e)
-    print([ee.hex() for ee in e])
+    # print([r.hex() for r in res])
+    # e = [sha3_256(d).digest() for d in data]
+    # print(e)
+    # print([ee.hex() for ee in e])
 
-    # find_collision(e, 17, hash_f=lambda d: sha3_256_enc(d))
-    # print()
-    get_nonlinearity_chart(check_nonlinearity(data), check_nonlinearity(res))
+    # # find_collision(e, 17, hash_f=lambda d: sha3_256_enc(d))
+    # # print()
+    # get_nonlinearity_chart(check_nonlinearity(data), check_nonlinearity(res))
+
+    test_distribution(n=4, m=500)
