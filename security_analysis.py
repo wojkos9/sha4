@@ -52,26 +52,32 @@ def get_nonlinearity_chart(data1, data2):
     plt.show()
 
 
-def find_collision(hashes, bits, hash_f=sha3_256_enc):
+def find_collision(niter, bits, hash_f=sha3_256_enc):
     # random.seed(123)
-    for hash in hashes[:1]:
+    cum = 0
+    for j in range(niter):
+        hash = hash_f(random.randbytes(32))
         hash_bits = to_bits(hash)
-        col = ""
         ctr = 0
         best = 0
         while True:
             data = random.randbytes(32)
             guess = hash_f(data)
             guess_bits = to_bits(guess)
-            n = next(i for i in range(len(guess_bits)) if guess_bits[i] != hash_bits[i])
-            best = max(best, n)
-            print(n, 'best:', best)
+            m = next(i for i in range(len(guess_bits)) if guess_bits[i] != hash_bits[i])
+            best = max(best, m)
+            print(j, m, 'best:', best)
             ctr += 1
-            if n >= bits:
+            if m >= bits:
                 break
-        print('checked hashes:', ctr)
-        print(hash_bits)
-        print(guess_bits)
+        cum += ctr
+    r = cum / niter
+    print(niter, bits, ':', r)
+    return r
+        # print('checked hashes:', ctr)
+        # print(hash_bits)
+        # print(guess_bits)
+
 
 
 def flip_bit(bits, i):
@@ -89,19 +95,20 @@ def hamming(d1, d2):
 
 
 def sac_vals(bits):
-    n = 3  # len(bits)
-    m = len(bin(n)) - 2
+    n = 16 # len(bits)
+    # m = len(bin(n)) - 2
     base_hash = sha3_256_enc(bits)
     return [hamming(base_hash, sha3_256_enc(flip_bit(bits, i))) for i in range(n)]
 
 
 # 49.603271484375
-def test_sac():
-    data = ["qwertyui", "asdfghj"][:1]
+def test_sac(n=5):
+    data = [random.randbytes(32) for _ in range(n)]
     for d in data:
-        b = to_bits(d.encode('ascii'))
+        b = to_bits(d)
         v = sac_vals(b)
-        print([v * 100 for v in v])
+        # print([v * 100 for v in v])
+        print(sum(v) / len(v) * 100)
 
 
 def test_balance1(bits: list[int]):
@@ -109,7 +116,7 @@ def test_balance1(bits: list[int]):
 
 
 def test_balance(n=5):
-    random.seed(1337)
+    # random.seed(1337)
     data = [random.randbytes(32) for _ in range(n)]
     c = 0
     for d in data:
@@ -171,4 +178,5 @@ if __name__ == "__main__":
     # # print()
     # get_nonlinearity_chart(check_nonlinearity(data), check_nonlinearity(res))
 
-    test_distribution(n=4, m=500)
+    # test_distribution(n=4, m=500)
+    find_collision(10, 5)
